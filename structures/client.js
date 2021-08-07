@@ -1,7 +1,8 @@
 let { Client } = require("discord.js"),
   Database = require("./Database"),
   Cache = require("./Cache"),
-  CakeMessage = require("./Classes/Message.js");
+  CakeMessage = require("./Classes/Message.js"),
+  MessageHandler = require("./MessageHandler");
 module.exports = class CakeClient extends Client {
   constructor(options) {
     super(options.options);
@@ -11,6 +12,7 @@ module.exports = class CakeClient extends Client {
     this.token ??= options.token;
     this.db = new Database(this);
     this.cache = new Cache(this);
+    this.messages = new MessageHandler(this);
   }
   async getMessage(message) {
     let channel = this.cache.channels.get(message.channelId),
@@ -27,7 +29,7 @@ module.exports = class CakeClient extends Client {
       );
     const m = { guild, author: message.author, ...message.toJSON() };
     message = new CakeMessage(this, m, { channel, guild });
-    await message.getCommandData(message.content);
+    await message.getCommandData(message.content || "");
     return message;
   }
   isCommand(query) {

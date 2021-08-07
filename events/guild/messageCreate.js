@@ -2,6 +2,7 @@ let Event = require("@structures/Event.js");
 new Event()
   .setMeta({
     name: "messageCreate",
+    type: "on"
   })
   .run(async (client, message) => {
     message = await client.getMessage(message);

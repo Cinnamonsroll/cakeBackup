@@ -6,6 +6,7 @@ new Command()
     category: "general",
     aliases: ["pong"],
   })
-  .run(async ({ message }) => {
-   message.editOrReply("ping?")
+  .run(async ({ message, client }) => {
+   let m = await message.editOrReply("ping?")
+   await m.edit(`Pong! \`${client.ws.ping}ms\``)
   });

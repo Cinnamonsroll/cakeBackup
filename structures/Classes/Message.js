@@ -27,20 +27,39 @@ module.exports = class CakeMessage extends Message {
     return this;
   }
   async editOrReply(content, options = {}) {
-    let message = await fetch(
-      `https://discord.com/api/v9/channels/${this.data.channel.id}/messages`,
-      {
-        method: "POST",
-        headers: this.headers,
-        body: JSON.stringify({
-          content: content,
-          embeds: options.embed ? [options.embed] : [],
-          allowed_mentions: {
-            replied_user: false,
-            parse: [],
-          },
-        }),
-      }
-    ).then((r) => r.json());
+    let message = await this.client.messages
+      .add(this.data.channel.id, this.headers, {
+        content: content,
+        embeds: options.embed ? [options.embed] : [],
+        allowed_mentions: {
+          replied_user: false,
+          parse: [],
+        },
+      })
+      .then((res) => res.json());
+    message = new this.constructor(this.client, message, {
+      channel: this.data.channel,
+      guild: this.data.guild,
+    });
+    await message.getCommandData(message.content || "");
+    return message;
+  }
+  async edit(content, options = {}) {
+    let message = await this.client.messages
+      .edit(this.data.channel.id, this.id, this.headers, {
+        content: content,
+        embeds: options.embed ? [options.embed] : [],
+        allowed_mentions: {
+          replied_user: false,
+          parse: [],
+        },
+      })
+      .then((res) => res.json());
+    message = new this.constructor(this.client, message, {
+      channel: this.data.channel,
+      guild: this.data.guild,
+    });
+    await message.getCommandData(message.content || "");
+    return message;
   }
 };

@@ -15,7 +15,10 @@ module.exports = class User {
     if (fromDB) {
       this.cache[id] = fromDB;
       return fromDB;
+    } else {
+      await this.create({ userId: id, blacklists: [] });
     }
+
     return {
       userId: id,
       blacklists: [],
@@ -25,8 +28,13 @@ module.exports = class User {
     await userModel.updateOne({ userId: id }, doc, { upsert: true }).lean();
   }
   async create(data) {
-    await userModel.create({ data }).lean();
+    await userModel.create(data)
     await this.get(data.userId);
     return this;
+  }
+  async addBlacklist(id, blacklist) {
+    const userData = await this.get(id);
+    userData.blacklists.unshift(blacklist);
+    await this.set(id, userData);
   }
 };

@@ -5,7 +5,6 @@ module.exports = class CakeMessage extends Message {
     super(client, data);
     this.headers = {
       Authorization: `Bot ${client.token}`,
-      "User-Agent": `DiscordBot`,
       "Content-Type": "application/json",
     };
     for (let [K, V] of Object.entries(messageData)) {
@@ -14,9 +13,7 @@ module.exports = class CakeMessage extends Message {
     }
   }
   async getCommandData(content) {
-    this.prefix = await this.client.db.guilds
-      .get(this.data.guild.id)
-      .then((x) => x.prefix);
+    this.prefix = await this.client.db.guilds.getPrefix(this.data.guild.id);
     let [command, ...args] = content
       .slice(this.prefix.length)
       .trim()
@@ -30,7 +27,7 @@ module.exports = class CakeMessage extends Message {
     let message = await this.client.messages
       .add(this.data.channel.id, this.headers, {
         content: content,
-        embeds: options.embed ? [options.embed] : [],
+        embeds: options.embeds || [],
         allowed_mentions: {
           replied_user: false,
           parse: [],
@@ -55,6 +52,16 @@ module.exports = class CakeMessage extends Message {
         },
       })
       .then((res) => res.json());
+    message = new this.constructor(this.client, message, {
+      channel: this.data.channel,
+      guild: this.data.guild,
+    });
+    await message.getCommandData(message.content || "");
+    return message;
+  }
+  async react(emoji) {
+    let message = await this.client.messages
+      .react(this.data.channel.id, this.id, this.headers, emoji)
     message = new this.constructor(this.client, message, {
       channel: this.data.channel,
       guild: this.data.guild,

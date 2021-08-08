@@ -1,7 +1,7 @@
 let { LoadRoutes: loadRoutes } = require("@jpbberry/load-routes"),
   express = require("express");
 module.exports = class API {
-  constructor() {
+  constructor({routesPath} = {}) {
     this.app = express();
     this.app.set("trust-proxy", true);
 

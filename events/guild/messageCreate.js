@@ -15,8 +15,9 @@ new Event()
       return;
     client.cache.messages.set(message.data.channel.id, message.id, message);
     if (message.command) {
-      for(let middleware of message.command.middleware){
-        if(await middleware({message, client})) return await middleware({message, client})
+      for (let middleware of message.command.middleware) {
+        if (await middleware({ message, client }))
+          return await middleware({ message, client });
       }
       let subcommand =
         client.subcommands[message.command.name] &&
@@ -27,7 +28,7 @@ new Event()
           ? client.subcommands[message.command.name].find(
               (x) => x.name === message.commandData.args[0]
             )
-          : undefined
+          : undefined;
       let whichCommand = subcommand || message.command;
       let ctx = { message, client };
       ctx = await argSystem(
@@ -39,12 +40,35 @@ new Event()
         whichCommand.args || [],
         message
       );
+      if (!ctx) return;
       if (
         whichCommand.beforeRun &&
         typeof whichCommand.beforeRun === "function" &&
         !whichCommand.beforeRun(ctx)
       )
         return await whichCommand.onCancel(ctx);
+      function parse(string) {
+        if (!string || typeof string !== "string")
+          throw new TypeError("Invalid string");
+        let matches = string.match(/(\-(\w+))/gi),
+          options = {};
+        if (!matches) return {};
+        for (let match of matches) {
+          let index = string.split(" ").indexOf(match);
+          options[match.substr(1)] = string.split(" ")[index + 1];
+        }
+        return options;
+      }
+      if (whichCommand.options.length) {
+        let parsed = parse(message.content);
+        ctx.options = {};
+        for (let commandOption of whichCommand.options) {
+          ctx.options[commandOption.name] =
+            commandOption.type === "number" && parsed[commandOption.name]
+              ? parseInt(parsed[commandOption.name])
+              : parsed[commandOption.name];
+        }
+      }
       await whichCommand.run(ctx);
     }
   });

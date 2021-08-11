@@ -2,9 +2,15 @@ module.exports = class Command {
   constructor() {
     this.client = require("../index.js");
     this.args = [];
+    this.options = [];
     this.middleware = [
       async ({ client, message }) => {
-        if ((await client.db.user.get(message.author.id).then(x => x.blacklists[0]?.type.toLowerCase())) === "blacklisting") {
+        if (
+          (await client.db.user
+            .get(message.author.id)
+            .then((x) => x.blacklists[0]?.type.toLowerCase())) ===
+          "blacklisting"
+        ) {
           await message.editOrReply("Oof");
           return true;
         }
@@ -21,12 +27,19 @@ module.exports = class Command {
     return this;
   }
   addSubcommand(mainCommand, subCommand) {
-    if(!this.client.subcommands[mainCommand]) this.client.subcommands[mainCommand] = []
-    this.client.subcommands[mainCommand].push(this.client.subcommandsArray.find(x => x.parent === mainCommand))
+    if (!this.client.subcommands[mainCommand])
+      this.client.subcommands[mainCommand] = [];
+    this.client.subcommands[mainCommand].push(
+      this.client.subcommandsArray.find((x) => x.parent === mainCommand)
+    );
     return this;
   }
   addArg(argData) {
     this.args.push(argData);
+    return this;
+  }
+  addOption(optionData) {
+    this.options.push(optionData);
     return this;
   }
   beforeRun(callback) {
@@ -41,7 +54,7 @@ module.exports = class Command {
 
   run(callback) {
     this.run = callback;
-    if(!!!this.subcommand) this.client.commands.push(this)
-    else this.client.subcommandsArray.push(this)
+    if (!!!this.subcommand) this.client.commands.push(this);
+    else this.client.subcommandsArray.push(this);
   }
 };

@@ -18,7 +18,7 @@ module.exports = class Guilds {
     }
     return {
       guildId: id,
-      prefix: "?",
+      prefix: "c~",
     };
   }
   async set(id, doc) {

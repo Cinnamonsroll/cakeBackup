@@ -2,15 +2,18 @@ let { Client } = require("discord.js"),
   Database = require("./Database"),
   Cache = require("./Cache"),
   CakeMessage = require("./Classes/Message.js"),
-  MessageHandler = require("./MessageHandler");
+  MessageHandler = require("./MessageHandler"),
+  interactionCommandsHandler = require("./interactionCommandsHandler.js");
 module.exports = class CakeClient extends Client {
   constructor(options) {
     super(options.options);
     this.commands = [];
     this.events = [];
+    this.contextMenus = [];
     this.subcommands = {};
     this.subcommandsArray = [];
     this.color = "#FFFEFB";
+    this.interactionCommands = new interactionCommandsHandler();
     this.responses = {};
     this.token ??= options.token;
     this.db = new Database(this);
